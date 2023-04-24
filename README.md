@@ -15,10 +15,12 @@ gen-sbom:
   runs-on: ubuntu-latest
   steps:
   - uses: actions/checkout@v3
-  - uses: advanced-security/generate-sbom-action@v1
-    id: gensbom
+  - uses: joshjohanning/generate-sbom-action@main
+    with:
+      token: ${{ secrets.GITHUB_PAT }}
+      org: ${{ github.repository_owner }}
   - uses: actions/upload-artifact@v3
     with:
       name: sbom
-      path: ${{ steps.gensbom.outputs.fileName }}
+      path: sbom-*.json
 ```

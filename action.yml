@@ -8,6 +8,10 @@ inputs:
   token:
     required: true
     description: 'GitHub token with permissions to read SBOMs from repos in the org - github.token will only bring in public repos SBOMs'
+  org:
+    required: true
+    description: 'The org to generate SBOMs for'
+    default: '${{ github.repository_owner }}'
 runs:
   using: 'node16'
   main: 'dist/index.js'
