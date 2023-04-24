@@ -100,3 +100,4 @@ __test__/*.js
 lib/**/*
 
 sbom-*.json
+src/*.js
