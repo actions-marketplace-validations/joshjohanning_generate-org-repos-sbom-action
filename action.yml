@@ -1,17 +1,13 @@
-name: 'Generate SBOM'
-description: 'Generate an SBOM via the REST API'
-author: 'Colin Dembovsky'
+name: 'Generate SBOM for All Repos in Org'
+description: 'Generate an SBOM via the REST API for all repos in an org'
+author: 'Josh Johanning'
 branding:
   color: green
   icon: shield
 inputs:
   token:
-    required: false
-    description: 'GitHub token with permissions to read SBOM'
-    default: ${{ github.token }}
-outputs:
-  fileName:
-    description: The filename of the SBOM generated
+    required: true
+    description: 'GitHub token with permissions to read SBOMs from repos in the org - github.token will only bring in public repos SBOMs'
 runs:
   using: 'node16'
   main: 'dist/index.js'
