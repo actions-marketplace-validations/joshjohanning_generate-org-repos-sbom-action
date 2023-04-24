@@ -22,25 +22,31 @@ export async function generateSBOM(
   for (const repo of repos) {
     core.info(`repo name: ${repo.name}`)
 
-    const res = await kit.request(
-      'GET /repos/{owner}/{repo}/dependency-graph/sbom',
-      {
-        owner: org,
-        repo: repo.name,
-        headers: {
-          'X-GitHub-Api-Version': '2022-11-28'
+    try {
+      const res = await kit.request(
+        'GET /repos/{owner}/{repo}/dependency-graph/sbom',
+        {
+          owner: org,
+          repo: repo.name,
+          headers: {
+            'X-GitHub-Api-Version': '2022-11-28'
+          }
         }
-      }
-    )
+      )
 
-    const fileName = `sbom-${org}-${repo.name}.json`
-    fs.writeFile(fileName, JSON.stringify(res.data.sbom), err => {
-      if (err) {
-        const e = wrapError(err)
-        core.setFailed(e.message)
-      } else {
-        core.info(`SBOM written to ${fileName}`)
-      }
-    })
+      const fileName = `sbom-${org}-${repo.name}.json`
+      fs.writeFile(fileName, JSON.stringify(res.data.sbom), err => {
+        if (err) {
+          const e = wrapError(err)
+          core.setFailed(e.message)
+        } else {
+          core.info(`SBOM written to ${fileName}`)
+        }
+      })
+    } catch (error) {
+      core.warning(
+        'Failed to export SBOM for: ${repo.name} (is Dependency Graph enabled?)'
+      )
+    }
   }
 }

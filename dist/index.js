@@ -56,23 +56,28 @@ function generateSBOM(token, org, octokit) {
         // loop through repos
         for (const repo of repos) {
             core.info(`repo name: ${repo.name}`);
-            const res = yield kit.request('GET /repos/{owner}/{repo}/dependency-graph/sbom', {
-                owner: org,
-                repo: repo.name,
-                headers: {
-                    'X-GitHub-Api-Version': '2022-11-28'
-                }
-            });
-            const fileName = `sbom-${org}-${repo.name}.json`;
-            fs.writeFile(fileName, JSON.stringify(res.data.sbom), err => {
-                if (err) {
-                    const e = (0, utils_1.wrapError)(err);
-                    core.setFailed(e.message);
-                }
-                else {
-                    core.info(`SBOM written to ${fileName}`);
-                }
-            });
+            try {
+                const res = yield kit.request('GET /repos/{owner}/{repo}/dependency-graph/sbom', {
+                    owner: org,
+                    repo: repo.name,
+                    headers: {
+                        'X-GitHub-Api-Version': '2022-11-28'
+                    }
+                });
+                const fileName = `sbom-${org}-${repo.name}.json`;
+                fs.writeFile(fileName, JSON.stringify(res.data.sbom), err => {
+                    if (err) {
+                        const e = (0, utils_1.wrapError)(err);
+                        core.setFailed(e.message);
+                    }
+                    else {
+                        core.info(`SBOM written to ${fileName}`);
+                    }
+                });
+            }
+            catch (error) {
+                core.warning('Failed to export SBOM for: ${repo.name} (is Dependency Graph enabled?)');
+            }
         }
     });
 }
@@ -125,14 +130,16 @@ const utils_1 = __nccwpck_require__(918);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const token = core.getInput('token');
-            const org = core.getInput('org');
+            const token = (0, utils_1.getRequiredEnvParam)('GITHUB_TOKEN');
+            //const token: string = core.getInput('token')
+            const org = (0, utils_1.getRequiredEnvParam)('GITHUB_REPOSITORY_OWNER');
+            //const org: string = core.getInput('org')
             core.debug(new Date().toTimeString());
             yield (0, generate_sbom_1.generateSBOM)(token, org);
             core.debug(new Date().toTimeString());
         }
         catch (error) {
-            core.setFailed((0, utils_1.wrapError)(error).message);
+            core.info('Error: ' + error);
         }
     });
 }
