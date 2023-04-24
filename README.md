@@ -15,7 +15,7 @@ gen-sbom:
   runs-on: ubuntu-latest
   steps:
   - uses: actions/checkout@v3
-  - uses: joshjohanning/generate-sbom-action@main
+  - uses: joshjohanning/generate-org-repos-sbom-action@v1
     with:
       token: ${{ secrets.GITHUB_PAT }}
       org: ${{ github.repository_owner }}
