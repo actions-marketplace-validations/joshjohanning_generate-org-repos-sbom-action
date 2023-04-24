@@ -76,7 +76,7 @@ function generateSBOM(token, org, octokit) {
                 });
             }
             catch (error) {
-                core.warning('Failed to export SBOM for: ${repo.name} (is Dependency Graph enabled?)');
+                core.warning(`Failed to export SBOM for: ${repo.name} (is Dependency Graph enabled?)`);
             }
         }
     });
