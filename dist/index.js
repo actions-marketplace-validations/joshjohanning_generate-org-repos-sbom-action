@@ -126,14 +126,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const generate_sbom_1 = __nccwpck_require__(9586);
-const utils_1 = __nccwpck_require__(918);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const token = (0, utils_1.getRequiredEnvParam)('GITHUB_TOKEN');
-            //const token: string = core.getInput('token')
-            const org = (0, utils_1.getRequiredEnvParam)('GITHUB_REPOSITORY_OWNER');
-            //const org: string = core.getInput('org')
+            const token = core.getInput('token');
+            const org = core.getInput('org');
             core.debug(new Date().toTimeString());
             yield (0, generate_sbom_1.generateSBOM)(token, org);
             core.debug(new Date().toTimeString());
