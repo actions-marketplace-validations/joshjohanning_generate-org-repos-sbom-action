@@ -38,36 +38,42 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.generateSBOM = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const octokit_1 = __nccwpck_require__(7467);
-const fs_1 = __importDefault(__nccwpck_require__(7147));
+const fs = __importStar(__nccwpck_require__(7147));
 const utils_1 = __nccwpck_require__(918);
-function generateSBOM(token, owner, repo, sha, octokit) {
+function generateSBOM(token, org, octokit) {
     return __awaiter(this, void 0, void 0, function* () {
         const kit = octokit || new octokit_1.Octokit({ auth: token });
-        const res = yield kit.request('GET /repos/{owner}/{repo}/dependency-graph/sbom', {
-            owner,
-            repo,
-            headers: {
-                'X-GitHub-Api-Version': '2022-11-28'
-            }
+        // get all repos in org
+        const repos = yield kit.paginate(kit.rest.repos.listForOrg, {
+            org
         });
-        const fileName = `sbom-${owner}-${repo}-${sha}.json`;
-        fs_1.default.writeFile(fileName, JSON.stringify(res.data.sbom), err => {
-            if (err) {
-                const e = (0, utils_1.wrapError)(err);
-                core.setFailed(e.message);
-            }
-            else {
-                core.setOutput('fileName', fileName);
-                core.info(`SBOM written to ${fileName}`);
-            }
-        });
+        // write repos to log
+        core.info(`Found ${repos.length} repos`);
+        // loop through repos
+        for (const repo of repos) {
+            core.info(`repo name: ${repo.name}`);
+            const res = yield kit.request('GET /repos/{owner}/{repo}/dependency-graph/sbom', {
+                owner: org,
+                repo: repo.name,
+                headers: {
+                    'X-GitHub-Api-Version': '2022-11-28'
+                }
+            });
+            const fileName = `sbom-${org}-${repo.name}.json`;
+            fs.writeFile(fileName, JSON.stringify(res.data.sbom), err => {
+                if (err) {
+                    const e = (0, utils_1.wrapError)(err);
+                    core.setFailed(e.message);
+                }
+                else {
+                    core.info(`SBOM written to ${fileName}`);
+                }
+            });
+        }
     });
 }
 exports.generateSBOM = generateSBOM;
@@ -120,11 +126,9 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const token = core.getInput('token');
-            const repo_owner = (0, utils_1.getRequiredEnvParam)('GITHUB_REPOSITORY');
-            const [owner, repo] = repo_owner.split('/');
-            const sha = (0, utils_1.getRequiredEnvParam)('GITHUB_SHA');
+            const org = core.getInput('org');
             core.debug(new Date().toTimeString());
-            yield (0, generate_sbom_1.generateSBOM)(token, owner, repo, sha);
+            yield (0, generate_sbom_1.generateSBOM)(token, org);
             core.debug(new Date().toTimeString());
         }
         catch (error) {
